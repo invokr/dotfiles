@@ -1,0 +1,29 @@
+[core]
+    # Tread trailing spaces and tabs as errors
+    whitespace = space-before-tab,-indent-with-non-tab,trailing-space
+
+    # Fix rebase on OSX
+    trustctime = false
+
+[user]
+    name = Robin
+    email = me@invokr.org
+
+[apply]
+    # Fix whitespaces when applying patches
+    whitespace = fix
+
+[alias]
+    # Show more information when looking at tags, branches or remoted
+    tags = tag -l
+    branches = branch -a
+    remotes = remote -v
+
+    # Pull master and all submodules
+    pullall = !"git pull; git submodule foreach git pull origin master"
+
+    # Contributer list
+    contrib = shortlog --summary --numbered
+
+[push]
+    default = current
