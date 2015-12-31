@@ -1,5 +1,5 @@
 [core]
-    # Tread trailing spaces and tabs as errors
+    # Treat trailing spaces and tabs as errors
     whitespace = space-before-tab,-indent-with-non-tab,trailing-space
 
     # Fix rebase on OSX
