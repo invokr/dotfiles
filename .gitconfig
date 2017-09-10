@@ -24,6 +24,9 @@
 
     # Contributer list
     contrib = shortlog --summary --numbered
+    
+    # Update and pull all submodules
+    sinit = submodule update --init --recursive
 
 [push]
     default = current

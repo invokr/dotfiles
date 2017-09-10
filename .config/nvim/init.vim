@@ -1,16 +1,24 @@
 let g:python_host_prog='/usr/bin/python2.7'
 
-" Plugins
-call plug#begin('~/.nvim/plugged')
-Plug 'sickill/vim-monokai'
-Plug 'bling/vim-airline'
-Plug 'Valloric/YouCompleteMe', { 'do': './install.sh' }
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'jistr/vim-nerdtree-tabs'
-Plug 'tpope/vim-fugitive'
-Plug 'scrooloose/syntastic'
-call plug#end()
+set nocompatible              " be iMproved, required
+filetype off                  " required
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.config/nvim/bundle/Vundle.vim
+call vundle#begin("~/.config/nvim/bundle")
+
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'sickill/vim-monokai'
+Plugin 'bling/vim-airline'
+Plugin 'scrooloose/nerdtree'
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+Plugin 'jistr/vim-nerdtree-tabs'
+Plugin 'tpope/vim-fugitive'
+Plugin 'scrooloose/syntastic'
+Plugin 'vim-airline/vim-airline-themes'
+Plugin 'Valloric/YouCompleteMe'
+
+call vundle#end()            " required
+filetype plugin indent on    " required
 
 " General
 set autoread
