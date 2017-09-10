@@ -7,14 +7,20 @@ set rtp+=~/.config/nvim/bundle/Vundle.vim
 call vundle#begin("~/.config/nvim/bundle")
 
 Plugin 'VundleVim/Vundle.vim'
-Plugin 'sickill/vim-monokai'
+" Airline
 Plugin 'bling/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
+
+" Nerdtree
 Plugin 'scrooloose/nerdtree'
-Plugin 'Xuyuanp/nerdtree-git-plugin'
 Plugin 'jistr/vim-nerdtree-tabs'
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+
+" Others
+Plugin 'sickill/vim-monokai'
 Plugin 'tpope/vim-fugitive'
 Plugin 'scrooloose/syntastic'
-Plugin 'vim-airline/vim-airline-themes'
+Plugin 'kien/ctrlp.vim'
 Plugin 'Valloric/YouCompleteMe'
 
 call vundle#end()            " required
@@ -62,6 +68,10 @@ set nobackup
 set nowb
 set noswapfile
 
+" YCM config, close preview pls
+let g:ycm_autoclose_preview_window_after_insertion = 1
+let g:ycm_autoclose_preview_window_after_completion = 1
+
 " Clang Format
 let g:clang_format_bin = "/usr/bin/clang-format-3.5"
 
@@ -96,3 +106,6 @@ command -bar -nargs=? ShowSpaces call ShowSpaces(<args>)
 command -bar -nargs=0 -range=% TrimSpaces <line1>,<line2>call TrimSpaces()
 
 nmap <Leader><Space>   :TrimSpaces<CR>
+nmap <Leader><Right>   :tabn<CR>
+nmap <Leader><Left>    :tabp<CR>
+nmap <Leader>s         :CtrlPMixed<CR>
