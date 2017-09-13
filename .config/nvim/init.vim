@@ -53,6 +53,8 @@ set laststatus=2
 let g:airline_theme="papercolor"
 
 map <Leader>nn :NERDTreeTabsToggle<CR>
+let NERDTreeIgnore = ['\.pb.go']
+
 tnoremap <Esc> <C-\><C-n>
 
 " Search and replace

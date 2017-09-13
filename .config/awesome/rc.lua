@@ -14,6 +14,7 @@ local beautiful = require("beautiful")
 local naughty = require("naughty")
 local menubar = require("menubar")
 local vicious = require("vicious")
+local hotkeys_popup = require("awful.hotkeys_popup").widget
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -96,30 +97,13 @@ local layouts =
 }
 -- }}}
 
--- {{{ Wallpaper
-if beautiful.wallpaper then
-    for s = 1, screen.count() do
-        gears.wallpaper.maximized(beautiful.wallpaper, s, true)
-    end
-end
--- }}}
-
--- {{{ Tags
--- Define a tag table which hold all screen tags.
-tags = {}
-for s = 1, screen.count() do
-    -- Each screen has its own tag table.
-    tags[s] = awful.tag({ 1, 2, 3, 4, 5 }, s, layouts[1])
-end
--- }}}
-
 -- {{{ Menu
 -- Create a laucher widget and a main menu
 myawesomemenu = {
    { "manual", terminal .. " -e man awesome" },
    { "edit config", editor_cmd .. " " .. awesome.conffile },
    { "restart", awesome.restart },
-   { "quit", awesome.quit }
+   { "quit", function() awesome.quit() end }
 }
 
 mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
@@ -196,7 +180,7 @@ uptimeicon:set_image(beautiful.uptimeicon)
 fswidget = wibox.widget.textbox()
 
 vicious.register(fswidget, vicious.widgets.fs,
-'<span background="#D0785D" font="' .. font .. '"> <span color="#EEEEEE">${/ avail_gb}G / 220G </span></span>', 
+'<span background="#D0785D" font="' .. font .. '"> <span color="#EEEEEE">${/ avail_gb}G / 220G </span></span>',
 800)
 
 fsicon = wibox.widget.imagebox()
@@ -304,75 +288,95 @@ mytasklist.buttons = awful.util.table.join(
                                               awful.client.focus.byidx(-1)
                                               if client.focus then client.focus:raise() end
                                           end))
-
-for s = 1, screen.count() do
-    -- Create a promptbox for each screen
-    mypromptbox[s] = awful.widget.prompt()
-    -- Create an imagebox widget which will contains an icon indicating which layout we're using.
-    -- We need one layoutbox per screen.
-    mylayoutbox[s] = awful.widget.layoutbox(s)
-    mylayoutbox[s]:buttons(awful.util.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
-                           awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
-    -- Create a taglist widget
-    mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
-
-    -- Create a tasklist widget
-    mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons)
-
-    -- Create the wibox
-    mywibox[s] = awful.wibox({ position = "top", screen = s, height = "16" })
-
-    -- Widgets that are aligned to the left
-    local left_layout = wibox.layout.fixed.horizontal()
-    left_layout:add(mylauncher)
-    left_layout:add(mytaglist[s])
-    left_layout:add(mypromptbox[s])
-
-    -- Widgets that are aligned to the right
-    local right_layout = wibox.layout.fixed.horizontal()
-    right_layout:add(arr9)
-    right_layout:add(mpdicon)
-    right_layout:add(mpdwidget) 
---    right_layout:add(mailicon)
-    right_layout:add(arr8)
-    right_layout:add(memicon)
-    right_layout:add(memwidget)
-    right_layout:add(arr7)
-    right_layout:add(cpuicon)
-    right_layout:add(cpuwidget)
-    right_layout:add(arr6)
-    right_layout:add(volumeicon)
-    right_layout:add(volume)
-    right_layout:add(arr5)
-    right_layout:add(fsicon)
-    right_layout:add(fswidget)
-    right_layout:add(arr4)
---    right_layout:add(uptimeicon)
---    right_layout:add(uptimewidget) 
-    right_layout:add(baticon)
-    right_layout:add(batwidget)
-    right_layout:add(arr3)
-    right_layout:add(neticon)
-    right_layout:add(netwidget)
-    right_layout:add(arr2)
-    right_layout:add(clockicon)
-    right_layout:add(tdwidget)
-    right_layout:add(arr1)
-    if s == 1 then right_layout:add(wibox.widget.systray()) end
-    right_layout:add(mylayoutbox[s])
-
-    -- Now bring it all together (with the tasklist in the middle)
-    local layout = wibox.layout.align.horizontal()
-    layout:set_left(left_layout)
-    layout:set_middle(mytasklist[s])
-    layout:set_right(right_layout)
-
-    mywibox[s]:set_widget(layout)
+-- set wallpaper helper
+local function set_wallpaper(s)
+  -- Wallpaper
+  if beautiful.wallpaper then
+      local wallpaper = beautiful.wallpaper
+      -- If wallpaper is a function, call it with the screen
+      if type(wallpaper) == "function" then
+          wallpaper = wallpaper(s)
+      end
+      gears.wallpaper.maximized(wallpaper, s, true)
+  end
 end
--- }}}
+
+-- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
+screen.connect_signal("property::geometry", set_wallpaper)
+
+awful.screen.connect_for_each_screen(function(s)
+  -- Set wallpaper
+  set_wallpaper(s)
+
+  -- Set Tags
+  awful.tag({ 1, 2, 3, 4, 5 }, s, layouts[1])
+
+  -- Create a promptbox for each screen
+  mypromptbox[s] = awful.widget.prompt()
+  -- Create an imagebox widget which will contains an icon indicating which layout we're using.
+  -- We need one layoutbox per screen.
+  mylayoutbox[s] = awful.widget.layoutbox(s)
+  mylayoutbox[s]:buttons(awful.util.table.join(
+                         awful.button({ }, 1, function () awful.layout.inc(layouts, 1) end),
+                         awful.button({ }, 3, function () awful.layout.inc(layouts, -1) end),
+                         awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
+                         awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
+  -- Create a taglist widget
+  mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
+
+  -- Create a tasklist widget
+  mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons)
+
+  -- Create the wibox
+  mywibox[s] = awful.wibox({ position = "top", screen = s, height = "16" })
+
+  -- Widgets that are aligned to the left
+  local left_layout = wibox.layout.fixed.horizontal()
+  left_layout:add(mylauncher)
+  left_layout:add(mytaglist[s])
+  left_layout:add(mypromptbox[s])
+
+  -- Widgets that are aligned to the right
+  local right_layout = wibox.layout.fixed.horizontal()
+  right_layout:add(arr9)
+  right_layout:add(mpdicon)
+  right_layout:add(mpdwidget)
+--    right_layout:add(mailicon)
+  right_layout:add(arr8)
+  right_layout:add(memicon)
+  right_layout:add(memwidget)
+  right_layout:add(arr7)
+  right_layout:add(cpuicon)
+  right_layout:add(cpuwidget)
+  right_layout:add(arr6)
+  right_layout:add(volumeicon)
+  right_layout:add(volume)
+  right_layout:add(arr5)
+  right_layout:add(fsicon)
+  right_layout:add(fswidget)
+  right_layout:add(arr4)
+--  right_layout:add(uptimeicon)
+--  right_layout:add(uptimewidget)
+  right_layout:add(baticon)
+  right_layout:add(batwidget)
+  right_layout:add(arr3)
+  right_layout:add(neticon)
+  right_layout:add(netwidget)
+  right_layout:add(arr2)
+  right_layout:add(clockicon)
+  right_layout:add(tdwidget)
+  right_layout:add(arr1)
+  if s == 1 then right_layout:add(wibox.widget.systray()) end
+  right_layout:add(mylayoutbox[s])
+
+  -- Now bring it all together (with the tasklist in the middle)
+  local layout = wibox.layout.align.horizontal()
+  layout:set_left(left_layout)
+  layout:set_middle(mytasklist[s])
+  layout:set_right(right_layout)
+
+  mywibox[s]:set_widget(layout)
+end)
 
 -- {{{ Mouse bindings
 root.buttons(awful.util.table.join(
@@ -442,7 +446,7 @@ globalkeys = awful.util.table.join(
               end),
     -- Menubar
     awful.key({ modkey }, "p", function() menubar.show() end),
-    
+
     -- Multimedia keys
     awful.key({ }, "XF86AudioStop", function () awful.util.spawn("mpc clear") end),
     awful.key({ }, "XF86AudioPlay", function () awful.util.spawn("mpc toggle") end),
@@ -537,6 +541,7 @@ awful.rules.rules = {
       properties = { border_width = beautiful.border_width,
                      border_color = beautiful.border_normal,
                      focus = awful.client.focus.filter,
+                     screen = awful.screen.focused,
                      keys = clientkeys,
                      buttons = clientbuttons } },
     { rule = { class = "MPlayer" },
@@ -631,3 +636,5 @@ function run_once(cmd)
         end
         awful.util.spawn_with_shell("pgrep -u $USER -x " .. findme .. " > /dev/null || (" .. cmd .. ")")
 end
+
+run_once("xrandr --output eDP-1 --right-of HDMI-1")
